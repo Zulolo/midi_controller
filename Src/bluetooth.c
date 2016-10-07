@@ -4,12 +4,56 @@
 #define BT_MODULE_RESET_LOW_DURATION		7
 
 extern osSemaphoreId BT_tUARTRsrHandle;
+extern UART_HandleTypeDef huart1;
+
+/**
+  * @brief  Tx Transfer completed callback
+  * @param  UartHandle: UART handle. 
+  * @note   This example shows a simple way to report end of DMA Tx transfer, and 
+  *         you can add your own implementation. 
+  * @retval None
+  */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle)
+{
+  xSemaphoreGive(BT_tUARTRsrHandle);
+
+}
+
+/**
+  * @brief  Rx Transfer completed callback
+  * @param  UartHandle: UART handle
+  * @note   This example shows a simple way to report end of DMA Rx transfer, and 
+  *         you can add your own implementation.
+  * @retval None
+  */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
+{
+  xSemaphoreGive(BT_tUARTRsrHandle);
+  
+}
 
 int32_t nSendATCmd(BT_MODULE_AT_CMD_T tBtAtCmd, uint8_t* pArguments, uint8_t unArgLength)
 {
 	xSemaphoreTake(BT_tUARTRsrHandle, portMAX_DELAY);
 	
-	xSemaphoreGive(BT_tUARTRsrHandle);
+	return 0;
+}
+
+// Only write to BT module, no check return
+int32_t nWriteBtModule(BT_MODULE_AT_CMD_T tBtAtCmd, uint8_t* pArguments, uint8_t unArgLength)
+{
+	xSemaphoreTake(BT_tUARTRsrHandle, portMAX_DELAY);
+	if(HAL_UART_Transmit_DMA(&huart1, (uint8_t*)pArguments, unArgLength)!= HAL_OK)
+  {
+    return (-1);
+  }
+	return 0;
+}
+
+// Write to BT module and then read response
+int32_t nReadBtModule(BT_MODULE_AT_CMD_T tBtAtCmd, uint8_t* pArguments, uint8_t unArgLength)
+{
+	xSemaphoreTake(BT_tUARTRsrHandle, portMAX_DELAY);
 	
 	return 0;
 }
