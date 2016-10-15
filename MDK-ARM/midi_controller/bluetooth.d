@@ -1,4 +1,5 @@
 midi_controller\bluetooth.o: ..\Src\bluetooth.c
+midi_controller\bluetooth.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 midi_controller\bluetooth.o: ../Inc/bluetooth.h
 midi_controller\bluetooth.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 midi_controller\bluetooth.o: ../Inc/stm32f1xx_hal_conf.h

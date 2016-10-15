@@ -49,10 +49,12 @@ SPI_HandleTypeDef hspi2;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart1_tx;
+DMA_HandleTypeDef hdma_usart1_rx;
 
 osThreadId defaultTaskHandle;
 osThreadId btCommTaskHandle;
-osSemaphoreId BT_tUARTRsrHandle;
+osSemaphoreId BT_tUART_TxIsrHandle;
+osSemaphoreId BT_tUART_RxIsrHandle;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -116,9 +118,13 @@ int main(void)
   /* USER CODE END RTOS_MUTEX */
 
   /* Create the semaphores(s) */
-  /* definition and creation of BT_tUARTRsr */
-  osSemaphoreDef(BT_tUARTRsr);
-  BT_tUARTRsrHandle = osSemaphoreCreate(osSemaphore(BT_tUARTRsr), 1);
+  /* definition and creation of BT_tUART_TxIsr */
+  osSemaphoreDef(BT_tUART_TxIsr);
+  BT_tUART_TxIsrHandle = osSemaphoreCreate(osSemaphore(BT_tUART_TxIsr), 1);
+
+  /* definition and creation of BT_tUART_RxIsr */
+  osSemaphoreDef(BT_tUART_RxIsr);
+  BT_tUART_RxIsrHandle = osSemaphoreCreate(osSemaphore(BT_tUART_RxIsr), 1);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -356,6 +362,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel4_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 10, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+  /* DMA1_Channel5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 10, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
 }
 
