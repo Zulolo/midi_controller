@@ -140,7 +140,7 @@ int main(void)
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of btCommTask */
-  osThreadDef(btCommTask, BT_Comm, osPriorityHigh, 0, 256);
+  osThreadDef(btCommTask, BT_Comm, osPriorityHigh, 0, 512);
   btCommTaskHandle = osThreadCreate(osThread(btCommTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
