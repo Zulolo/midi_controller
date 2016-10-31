@@ -6,13 +6,13 @@
 #define BT_MODULE_RESET_AFTER_DURATION	20
 #define MAX_BT_UART_RX_LENGTH						512
 #define MAX_BT_UART_TX_LENGTH						64
-#define BT_UART_HANDLE									huart1
+#define BT_UART_HANDLE									huart3	//huart1
 #define AT_CMD_END_CHARACTERS						"\r\n"
 #define AT_CMD_END_LEN									(sizeof(AT_CMD_END_CHARACTERS) - 1)
 #define AT_CMD_RSP_OK_CHARACTERS				"OK\r\n"
 #define AT_CMD_RSP_OK_LEN								(sizeof(AT_CMD_RSP_OK_CHARACTERS) - 1)
-#define TARGET_BT_MODULE_BAUD						"8"		//115200
-#define TARGET_MIDI_CTRL_BAUD						115200
+#define TARGET_BT_MODULE_BAUD						"7"		//57600
+#define TARGET_MIDI_CTRL_BAUD						57600
 #define MAX_BT_MDL_BAUD_RETRY_NUM				5
 
 #define TEST_AT_VERSION_RSP							"+VERSION"
@@ -26,6 +26,10 @@
 #define AT_CMD_INQM											"AT+INQM"
 #define AT_CMD_INQ											"AT+INQ"
 #define AT_CMD_IMME											"AT+IMME"
+#define AT_CMD_CONA											"AT+CONA"
+#define AT_CMD_RESET										"AT+RESET"
+#define AT_CMD_CMODE										"AT+CMODE"
+#define AT_CMD_STATE										"AT+STATE"
 #define AT_CMD_HELP											"AT+HELP"
 
 #define AT_CMD_RSP_AT										"+INQS\r\n"
@@ -37,6 +41,10 @@
 #define AT_CMD_RSP_INQM									""
 #define AT_CMD_RSP_INQ									""
 #define AT_CMD_RSP_IMME									"+IMME=0\r\n"
+#define AT_CMD_RSP_CONA									""
+#define AT_CMD_RSP_RESET								""
+#define AT_CMD_RSP_CMODE								""
+#define AT_CMD_RSP_STATE								""
 #define AT_CMD_RSP_HELP									""
 
 extern osSemaphoreId BT_tUART_TxIsrHandle;
@@ -57,19 +65,27 @@ typedef enum
 
 const char* P_AT_CMD[] = {AT_CMD_AT, AT_CMD_VERSION, AT_CMD_LADDR, AT_CMD_NAME, 
 													AT_CMD_ROLE, AT_CMD_BAUD, AT_CMD_INQM, AT_CMD_INQ, 
-													AT_CMD_IMME, AT_CMD_HELP};
+													AT_CMD_IMME, AT_CMD_CONA, AT_CMD_RESET, AT_CMD_CMODE, 
+													AT_CMD_STATE, AT_CMD_HELP};
 const uint16_t UN_AT_CMD_LEN[] = {sizeof(AT_CMD_AT) - 1, sizeof(AT_CMD_VERSION) - 1, sizeof(AT_CMD_LADDR) - 1, sizeof(AT_CMD_NAME) - 1,
 																	sizeof(AT_CMD_ROLE) - 1, sizeof(AT_CMD_BAUD) - 1, sizeof(AT_CMD_INQM) - 1, sizeof(AT_CMD_INQ) - 1,
-																	sizeof(AT_CMD_IMME) - 1, sizeof(AT_CMD_HELP) - 1};
+																	sizeof(AT_CMD_IMME) - 1, sizeof(AT_CMD_CONA) - 1, sizeof(AT_CMD_RESET) - 1, sizeof(AT_CMD_CMODE) - 1, 
+																	sizeof(AT_CMD_STATE) - 1, sizeof(AT_CMD_HELP) - 1};
 
 const char* P_AT_CMD_RSP[] = {AT_CMD_RSP_AT, AT_CMD_RSP_VERSION, AT_CMD_RSP_LADDR, AT_CMD_RSP_NAME, 
 															AT_CMD_RSP_ROLE, AT_CMD_RSP_BAUD, AT_CMD_RSP_INQM, AT_CMD_RSP_INQ,
-															AT_CMD_RSP_IMME, AT_CMD_RSP_HELP};
+															AT_CMD_RSP_IMME, AT_CMD_RSP_CONA, AT_CMD_RSP_RESET, AT_CMD_RSP_CMODE, 
+															AT_CMD_RSP_STATE, AT_CMD_RSP_HELP};
 const uint16_t UN_AT_CMD_RSP_LEN[] = {sizeof(AT_CMD_RSP_AT) - 1, sizeof(AT_CMD_RSP_VERSION) - 1, sizeof(AT_CMD_RSP_LADDR) - 1, sizeof(AT_CMD_RSP_NAME) - 1,
 																			sizeof(AT_CMD_RSP_ROLE) - 1, sizeof(AT_CMD_RSP_BAUD) - 1, sizeof(AT_CMD_RSP_INQM) - 1, sizeof(AT_CMD_RSP_INQ) - 1,
-																			sizeof(AT_CMD_RSP_IMME) - 1, sizeof(AT_CMD_RSP_HELP) - 1};
+																			sizeof(AT_CMD_RSP_IMME) - 1, sizeof(AT_CMD_RSP_CONA) - 1, sizeof(AT_CMD_RSP_RESET) - 1, sizeof(AT_CMD_RSP_CMODE) - 1, 
+																			sizeof(AT_CMD_RSP_STATE) - 1, sizeof(AT_CMD_RSP_HELP) - 1};
 
 const uint32_t UN_BAUD_LIST[] = {9600, 19200, 38400, 57600, 115200, 230400};
+
+static char unRxBuffer[MAX_BT_UART_RX_LENGTH];
+
+
 //static FlagStatus tBtUartRxTimeout;
 
 /**
@@ -137,11 +153,15 @@ uint16_t getAtCmdRspLen(BT_MODULE_AT_CMD_T tBtAtCmd, char* pArguments, uint16_t 
 	}else{
 		switch((uint32_t)tBtAtCmd){
 			case ENUM_AT_CMD_TEST:
-				return MAX_BT_UART_RX_LENGTH;
 			case ENUM_AT_CMD_INQ:
-				return MAX_BT_UART_RX_LENGTH;
+			case ENUM_AT_CMD_INQM:
+			case ENUM_AT_CMD_CONA:
+			case ENUM_AT_CMD_RESET:
+			case ENUM_AT_CMD_CMODE:
+			case ENUM_AT_CMD_STATE:
 			case ENUM_AT_CMD_HELP:
-				return MAX_BT_UART_RX_LENGTH;			
+				return MAX_BT_UART_RX_LENGTH;		
+		
 			default:
 				if (NULL == pArguments){
 					return UN_AT_CMD_RSP_LEN[tBtAtCmd];	
@@ -156,9 +176,11 @@ uint16_t getAtCmdTimeout(BT_MODULE_AT_CMD_T tBtAtCmd, char* pArguments, uint16_t
 {
 	switch((uint32_t)tBtAtCmd){
 		case ENUM_AT_CMD_INQ:
-			return 20000;
+			return 40000;
 		case ENUM_AT_CMD_TEST:
-			return 20000;
+			return 100;
+		case ENUM_AT_CMD_CONA:
+			return 40000;
 		default:
 			return ((NULL == pArguments)?(100):(300));	
 	}	
@@ -190,7 +212,7 @@ uint16_t getAtCmdString(char* pTxBuffer, BT_MODULE_AT_CMD_T tBtAtCmd, char* pArg
 // no matter write or read the AT command is, received BT module's response
 char* pSendATCmd(BT_MODULE_AT_CMD_T tBtAtCmd, char* pArguments, uint16_t unArgLength)
 {
-	static char unRxBuffer[MAX_BT_UART_RX_LENGTH];
+	
 	static char unTxBuffer[MAX_BT_UART_TX_LENGTH + 1];
 	uint16_t unTimeout;
 	uint16_t unAtCmdRspLen;
@@ -347,8 +369,22 @@ void BT_Comm(void const * argument)
 		pSendATCmd(ENUM_AT_CMD_IMME, "0", 1);
 		resetBtModule();		
 	}
+
+	
+	pSendATCmd(ENUM_AT_CMD_RESET, NULL, 0);
+	HAL_UART_Receive_DMA(&BT_UART_HANDLE, (uint8_t*)unRxBuffer, 512);
+	osDelay(50000);
+	while ((strstr(pSendATCmd(ENUM_AT_CMD_STATE, NULL, 0), "+STATE=0") != NULL)){
+		osDelay(1000);
+	}
+	pSendATCmd(ENUM_AT_CMD_CMODE, NULL, 0);
+	pSendATCmd(ENUM_AT_CMD_INQM, NULL, 0);
+	pSendATCmd(ENUM_AT_CMD_STATE, NULL, 0);
 	pSendATCmd(ENUM_AT_CMD_TEST, NULL, 0);
+	pSendATCmd(ENUM_AT_CMD_INQ, NULL, 0);
+	pSendATCmd(ENUM_AT_CMD_INQ, NULL, 0);
+	pSendATCmd(ENUM_AT_CMD_CONA, "0x001A7DDA7113", strlen("0x001A7DDA7113"));
 //	pSendATCmd(ENUM_AT_CMD_IMME, NULL, 0);
-//	pSendATCmd(ENUM_AT_CMD_INQ, NULL, 0);
+
 	
 }
