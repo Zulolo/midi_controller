@@ -49,7 +49,7 @@
 
 extern osSemaphoreId BT_tUART_TxIsrHandle;
 extern osSemaphoreId BT_tUART_RxIsrHandle;
-extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart3;
 
 /*
 typedef enum
@@ -361,30 +361,41 @@ int32_t nInitBT(void)
 
 void BT_Comm(void const * argument)
 {
-	if (nInitBT() < 0){
-		vTaskDelete(NULL);
-	}
-	if ((strstr(pSendATCmd(ENUM_AT_CMD_IMME, NULL, 0), P_AT_CMD_RSP[ENUM_AT_CMD_IMME]) == NULL)){
-		// Set power on auto start
-		pSendATCmd(ENUM_AT_CMD_IMME, "0", 1);
-		resetBtModule();		
-	}
+	uint8_t unNotes[2];
+//	if (nInitBT() < 0){
+//		vTaskDelete(NULL);
+//	}
+//	if ((strstr(pSendATCmd(ENUM_AT_CMD_IMME, NULL, 0), P_AT_CMD_RSP[ENUM_AT_CMD_IMME]) == NULL)){
+//		// Set power on auto start
+//		pSendATCmd(ENUM_AT_CMD_IMME, "0", 1);
+//		resetBtModule();		
+//	}
 
 	
-	pSendATCmd(ENUM_AT_CMD_RESET, NULL, 0);
-	HAL_UART_Receive_DMA(&BT_UART_HANDLE, (uint8_t*)unRxBuffer, 512);
-	osDelay(50000);
-	while ((strstr(pSendATCmd(ENUM_AT_CMD_STATE, NULL, 0), "+STATE=0") != NULL)){
-		osDelay(1000);
-	}
-	pSendATCmd(ENUM_AT_CMD_CMODE, NULL, 0);
-	pSendATCmd(ENUM_AT_CMD_INQM, NULL, 0);
-	pSendATCmd(ENUM_AT_CMD_STATE, NULL, 0);
-	pSendATCmd(ENUM_AT_CMD_TEST, NULL, 0);
-	pSendATCmd(ENUM_AT_CMD_INQ, NULL, 0);
-	pSendATCmd(ENUM_AT_CMD_INQ, NULL, 0);
-	pSendATCmd(ENUM_AT_CMD_CONA, "0x001A7DDA7113", strlen("0x001A7DDA7113"));
+//	pSendATCmd(ENUM_AT_CMD_RESET, NULL, 0);
+//	HAL_UART_Receive_DMA(&BT_UART_HANDLE, (uint8_t*)unRxBuffer, 512);
+//	osDelay(50000);
+//	while ((strstr(pSendATCmd(ENUM_AT_CMD_STATE, NULL, 0), "+STATE=0") != NULL)){
+//		osDelay(1000);
+//	}
+//	pSendATCmd(ENUM_AT_CMD_CMODE, NULL, 0);
+//	pSendATCmd(ENUM_AT_CMD_INQM, NULL, 0);
+//	pSendATCmd(ENUM_AT_CMD_STATE, NULL, 0);
+//	pSendATCmd(ENUM_AT_CMD_TEST, NULL, 0);
+//	pSendATCmd(ENUM_AT_CMD_INQ, NULL, 0);
+//	pSendATCmd(ENUM_AT_CMD_INQ, NULL, 0);
+//	pSendATCmd(ENUM_AT_CMD_CONA, "0x001A7DDA7113", strlen("0x001A7DDA7113"));
 //	pSendATCmd(ENUM_AT_CMD_IMME, NULL, 0);
 
+	while(1){
+		unNotes[0] = 80;
+		unNotes[1] = 77;
+		HAL_UART_Transmit_DMA(&BT_UART_HANDLE, unNotes, 2);
+		osDelay(200);
+		unNotes[0] = 80;
+		unNotes[1] = 0;
+		HAL_UART_Transmit_DMA(&BT_UART_HANDLE, unNotes, 2);
+		osDelay(1000);
+	}
 	
 }
