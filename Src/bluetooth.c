@@ -361,7 +361,7 @@ int32_t nInitBT(void)
 
 void BT_Comm(void const * argument)
 {
-	uint8_t unNotes[2];
+	char cNotes[5];
 //	if (nInitBT() < 0){
 //		vTaskDelete(NULL);
 //	}
@@ -388,13 +388,11 @@ void BT_Comm(void const * argument)
 //	pSendATCmd(ENUM_AT_CMD_IMME, NULL, 0);
 
 	while(1){
-		unNotes[0] = 80;
-		unNotes[1] = 77;
-		HAL_UART_Transmit_DMA(&BT_UART_HANDLE, unNotes, 2);
+		strcpy(cNotes, "5045");
+		HAL_UART_Transmit_DMA(&BT_UART_HANDLE, (uint8_t*)cNotes, sizeof(cNotes));
 		osDelay(200);
-		unNotes[0] = 80;
-		unNotes[1] = 0;
-		HAL_UART_Transmit_DMA(&BT_UART_HANDLE, unNotes, 2);
+		strcpy(cNotes, "5000");
+		HAL_UART_Transmit_DMA(&BT_UART_HANDLE, (uint8_t*)cNotes, sizeof(cNotes));
 		osDelay(1000);
 	}
 	
