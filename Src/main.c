@@ -55,8 +55,12 @@ DMA_HandleTypeDef hdma_usart3_tx;
 
 osThreadId defaultTaskHandle;
 osThreadId btCommTaskHandle;
+osThreadId keyboardTaskHandle;
 osSemaphoreId BT_tUART_TxIsrHandle;
 osSemaphoreId BT_tUART_RxIsrHandle;
+osSemaphoreId KB_PressedHandle;
+osSemaphoreId KB_CommIF_RxDoneHandle;
+osSemaphoreId KB_CommIF_TxDoneHandle;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -76,6 +80,7 @@ static void MX_USART1_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 void StartDefaultTask(void const * argument);
 extern void BT_Comm(void const * argument);
+extern void KB_Routine(void const * argument);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -112,7 +117,7 @@ int main(void)
   MX_USART3_UART_Init();
 
   /* USER CODE BEGIN 2 */
-
+	HAL_GPIO_WritePin(IO_NCS_GPIO_Port, IO_NCS_Pin, GPIO_PIN_SET);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -127,6 +132,18 @@ int main(void)
   /* definition and creation of BT_tUART_RxIsr */
   osSemaphoreDef(BT_tUART_RxIsr);
   BT_tUART_RxIsrHandle = osSemaphoreCreate(osSemaphore(BT_tUART_RxIsr), 1);
+
+  /* definition and creation of KB_Pressed */
+  osSemaphoreDef(KB_Pressed);
+  KB_PressedHandle = osSemaphoreCreate(osSemaphore(KB_Pressed), 1);
+
+  /* definition and creation of KB_CommIF_RxDone */
+  osSemaphoreDef(KB_CommIF_RxDone);
+  KB_CommIF_RxDoneHandle = osSemaphoreCreate(osSemaphore(KB_CommIF_RxDone), 1);
+
+  /* definition and creation of KB_CommIF_TxDone */
+  osSemaphoreDef(KB_CommIF_TxDone);
+  KB_CommIF_TxDoneHandle = osSemaphoreCreate(osSemaphore(KB_CommIF_TxDone), 1);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -144,6 +161,10 @@ int main(void)
   /* definition and creation of btCommTask */
   osThreadDef(btCommTask, BT_Comm, osPriorityHigh, 0, 512);
   btCommTaskHandle = osThreadCreate(osThread(btCommTask), NULL);
+
+  /* definition and creation of keyboardTask */
+  osThreadDef(keyboardTask, KB_Routine, osPriorityIdle, 0, 128);
+  keyboardTaskHandle = osThreadCreate(osThread(keyboardTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -278,8 +299,8 @@ static void MX_SPI1_Init(void)
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -401,7 +422,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, SPI2_CS4_Pin|SPI2_CS3_Pin|SPI2_CS2_Pin|IO_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, SPI2_CS1_Pin|BT_AWAKE_Pin|BT_NRST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, SPI2_CS1_Pin|BT_AWAKE_Pin|BT_NRST_Pin|IO_NCS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : BT_SLV_MST_Pin BT_SLV_MST_SW_HW_Pin */
   GPIO_InitStruct.Pin = BT_SLV_MST_Pin|BT_SLV_MST_SW_HW_Pin;
@@ -421,17 +442,21 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SPI2_CS1_Pin BT_AWAKE_Pin BT_NRST_Pin */
-  GPIO_InitStruct.Pin = SPI2_CS1_Pin|BT_AWAKE_Pin|BT_NRST_Pin;
+  /*Configure GPIO pins : SPI2_CS1_Pin BT_AWAKE_Pin BT_NRST_Pin IO_NCS_Pin */
+  GPIO_InitStruct.Pin = SPI2_CS1_Pin|BT_AWAKE_Pin|BT_NRST_Pin|IO_NCS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : IO_INT_Pin */
   GPIO_InitStruct.Pin = IO_INT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(IO_INT_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 7, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 }
 

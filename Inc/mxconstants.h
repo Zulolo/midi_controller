@@ -69,8 +69,8 @@
 #define BT_AWAKE_GPIO_Port GPIOA
 #define BT_NRST_Pin GPIO_PIN_12
 #define BT_NRST_GPIO_Port GPIOA
-#define IO_CS_Pin GPIO_PIN_15
-#define IO_CS_GPIO_Port GPIOA
+#define IO_NCS_Pin GPIO_PIN_15
+#define IO_NCS_GPIO_Port GPIOA
 #define IO_CLK_Pin GPIO_PIN_3
 #define IO_CLK_GPIO_Port GPIOB
 #define IO_DATA_Pin GPIO_PIN_5

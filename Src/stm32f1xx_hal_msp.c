@@ -225,15 +225,9 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     __HAL_RCC_SPI1_CLK_ENABLE();
   
     /**SPI1 GPIO Configuration    
-    PA15     ------> SPI1_NSS
     PB3     ------> SPI1_SCK
     PB5     ------> SPI1_MOSI 
     */
-    GPIO_InitStruct.Pin = IO_CS_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(IO_CS_GPIO_Port, &GPIO_InitStruct);
-
     GPIO_InitStruct.Pin = IO_CLK_Pin|IO_DATA_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
@@ -241,6 +235,9 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 
     __HAL_AFIO_REMAP_SPI1_ENABLE();
 
+    /* Peripheral interrupt init */
+    HAL_NVIC_SetPriority(SPI1_IRQn, 8, 0);
+    HAL_NVIC_EnableIRQ(SPI1_IRQn);
   /* USER CODE BEGIN SPI1_MspInit 1 */
 
   /* USER CODE END SPI1_MspInit 1 */
@@ -287,13 +284,13 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
     __HAL_RCC_SPI1_CLK_DISABLE();
   
     /**SPI1 GPIO Configuration    
-    PA15     ------> SPI1_NSS
     PB3     ------> SPI1_SCK
     PB5     ------> SPI1_MOSI 
     */
-    HAL_GPIO_DeInit(IO_CS_GPIO_Port, IO_CS_Pin);
-
     HAL_GPIO_DeInit(GPIOB, IO_CLK_Pin|IO_DATA_Pin);
+
+    /* Peripheral interrupt DeInit*/
+    HAL_NVIC_DisableIRQ(SPI1_IRQn);
 
   /* USER CODE BEGIN SPI1_MspDeInit 1 */
 
@@ -441,7 +438,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     __HAL_LINKDMA(huart,hdmatx,hdma_usart3_tx);
 
     /* Peripheral interrupt init */
-    HAL_NVIC_SetPriority(USART3_IRQn, 5, 0);
+    HAL_NVIC_SetPriority(USART3_IRQn, 8, 0);
     HAL_NVIC_EnableIRQ(USART3_IRQn);
   /* USER CODE BEGIN USART3_MspInit 1 */
 
