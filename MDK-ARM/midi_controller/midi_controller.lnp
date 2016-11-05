@@ -11,7 +11,6 @@
 "midi_controller\stm32f1xx_hal_gpio.o"
 "midi_controller\stm32f1xx_hal_rcc_ex.o"
 "midi_controller\stm32f1xx_hal_uart.o"
-"midi_controller\stm32f1xx_hal_i2c.o"
 "midi_controller\stm32f1xx_hal_tim_ex.o"
 "midi_controller\stm32f1xx_hal_cortex.o"
 "midi_controller\stm32f1xx_hal_adc.o"

@@ -1572,14 +1572,14 @@ HAL_StatusTypeDef HAL_SPI_DMAStop(SPI_HandleTypeDef *hspi)
 void HAL_SPI_IRQHandler(SPI_HandleTypeDef *hspi)
 {
   /* SPI in mode Receiver and Overrun not occurred ---------------------------*/
-  if((__HAL_SPI_GET_IT_SOURCE(hspi, SPI_IT_RXNE) != RESET) && (__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_RXNE) != RESET) && (__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_OVR) == RESET))
+  if((__HAL_SPI_GET_IT_SOURCE(hspi, SPI_IT_RXNE) != RESET))//		&& (__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_RXNE) != RESET))// && (__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_OVR) == RESET))
   {
     hspi->RxISR(hspi);
     return;
   }
 
   /* SPI in mode Tramitter ---------------------------------------------------*/
-  if((__HAL_SPI_GET_IT_SOURCE(hspi, SPI_IT_TXE) != RESET) && (__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_TXE) != RESET))
+  if((__HAL_SPI_GET_IT_SOURCE(hspi, SPI_IT_TXE) != RESET))// && (__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_TXE) != RESET))
   {
     hspi->TxISR(hspi);
     return;

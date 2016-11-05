@@ -335,7 +335,7 @@
               <MiscControls>--C99</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xB</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;                               ../Drivers/STM32F1xx_HAL_Driver/Inc;                               ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;                               ../Drivers/CMSIS/Include;                               ../Drivers/CMSIS/Device/ST/STM32F1xx/Include;                             ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3;                             ../Middlewares/Third_Party/FreeRTOS/Source/include;                             ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS</IncludePath>
+              <IncludePath>../Inc;                                         ../Drivers/STM32F1xx_HAL_Driver/Inc;                                         ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;                                         ../Drivers/CMSIS/Include;                                         ../Drivers/CMSIS/Device/ST/STM32F1xx/Include;                                       ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3;                                       ../Middlewares/Third_Party/FreeRTOS/Source/include;                                       ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -438,11 +438,6 @@
               <FileName>stm32f1xx_hal_uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f1xx_hal_i2c.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c</FilePath>
             </File>
             <File>
               <FileName>stm32f1xx_hal_tim_ex.c</FileName>
