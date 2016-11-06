@@ -50,6 +50,7 @@
 extern osSemaphoreId BT_tUART_TxIsrHandle;
 extern osSemaphoreId BT_tUART_RxIsrHandle;
 extern UART_HandleTypeDef huart3;
+extern osMessageQId tNoteEventQueueHandle;
 
 /*
 typedef enum
@@ -361,6 +362,7 @@ int32_t nInitBT(void)
 
 void BT_Comm(void const * argument)
 {
+	osEvent tKeyEvent;
 	char cNotes[5];
 //	if (nInitBT() < 0){
 //		vTaskDelete(NULL);
@@ -388,6 +390,7 @@ void BT_Comm(void const * argument)
 //	pSendATCmd(ENUM_AT_CMD_IMME, NULL, 0);
 
 	while(1){
+		tKeyEvent = osMessageGet(tNoteEventQueueHandle, portMAX_DELAY);
 		strcpy(cNotes, "5045");
 		HAL_UART_Transmit_DMA(&BT_UART_HANDLE, (uint8_t*)cNotes, sizeof(cNotes));
 		osDelay(200);
