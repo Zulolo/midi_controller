@@ -54,11 +54,11 @@ DMA_HandleTypeDef hdma_usart3_tx;
 osThreadId defaultTaskHandle;
 osThreadId btCommTaskHandle;
 osThreadId keyboardTaskHandle;
+osMessageQId tNoteEventQueueHandle;
 osSemaphoreId BT_tUART_TxIsrHandle;
 osSemaphoreId BT_tUART_RxIsrHandle;
 osSemaphoreId KB_PressedHandle;
-osSemaphoreId KB_CommIF_RxDoneHandle;
-osSemaphoreId KB_CommIF_TxDoneHandle;
+osSemaphoreId KB_ReleaseHandle;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -133,13 +133,9 @@ int main(void)
   osSemaphoreDef(KB_Pressed);
   KB_PressedHandle = osSemaphoreCreate(osSemaphore(KB_Pressed), 1);
 
-  /* definition and creation of KB_CommIF_RxDone */
-  osSemaphoreDef(KB_CommIF_RxDone);
-  KB_CommIF_RxDoneHandle = osSemaphoreCreate(osSemaphore(KB_CommIF_RxDone), 1);
-
-  /* definition and creation of KB_CommIF_TxDone */
-  osSemaphoreDef(KB_CommIF_TxDone);
-  KB_CommIF_TxDoneHandle = osSemaphoreCreate(osSemaphore(KB_CommIF_TxDone), 1);
+  /* definition and creation of KB_Release */
+  osSemaphoreDef(KB_Release);
+  KB_ReleaseHandle = osSemaphoreCreate(osSemaphore(KB_Release), 1);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -165,6 +161,11 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
+
+  /* Create the queue(s) */
+  /* definition and creation of tNoteEventQueue */
+  osMessageQDef(tNoteEventQueue, 16, uint8_t);
+  tNoteEventQueueHandle = osMessageCreate(osMessageQ(tNoteEventQueue), NULL);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -426,7 +427,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : IO_INT_Pin */
   GPIO_InitStruct.Pin = IO_INT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(IO_INT_GPIO_Port, &GPIO_InitStruct);
 
