@@ -85,7 +85,8 @@ const uint16_t UN_AT_CMD_RSP_LEN[] = {sizeof(AT_CMD_RSP_AT) - 1, sizeof(AT_CMD_R
 const uint32_t UN_BAUD_LIST[] = {9600, 19200, 38400, 57600, 115200, 230400};
 
 static char unRxBuffer[MAX_BT_UART_RX_LENGTH];
-
+static uint8_t unChannel = 1;
+static uint8_t unVelocity = 60;
 
 //static FlagStatus tBtUartRxTimeout;
 
@@ -360,10 +361,15 @@ int32_t nInitBT(void)
 	return 0;
 }
 
+#define NOTE_FRAME_LENGTH					sizeof("01AE2C")	// channel+note+velocity
+#define NOTE_FRAME_DATA_NUMBER		((NOTE_FRAME_LENGTH - 1)/2)
+#define NOTE_FRAME_END_SYMBOL			'\0'
+
 void BT_Comm(void const * argument)
 {
 	osEvent tKeyEvent;
-	char cNotes[5];
+	char cNotes[NOTE_FRAME_LENGTH];
+
 //	if (nInitBT() < 0){
 //		vTaskDelete(NULL);
 //	}
@@ -391,12 +397,9 @@ void BT_Comm(void const * argument)
 
 	while(1){
 		tKeyEvent = osMessageGet(tNoteEventQueueHandle, portMAX_DELAY);
-		strcpy(cNotes, "5045");
+		// channel+note+velocity+\0
+		sprintf(cNotes, "%02X%02X%02X", unChannel, tKeyEvent.value.v, unVelocity);
 		HAL_UART_Transmit_DMA(&BT_UART_HANDLE, (uint8_t*)cNotes, sizeof(cNotes));
-		osDelay(200);
-		strcpy(cNotes, "5000");
-		HAL_UART_Transmit_DMA(&BT_UART_HANDLE, (uint8_t*)cNotes, sizeof(cNotes));
-		osDelay(1000);
 	}
 	
 }

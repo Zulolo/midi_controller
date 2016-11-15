@@ -47,7 +47,7 @@ void KB_Routine(void const * argument)
 			while(1);
 		}
 		HAL_GPIO_WritePin(IO_NCS_GPIO_Port, IO_NCS_Pin, GPIO_PIN_SET);
-		osMessagePut(tNoteEventQueueHandle, unPressedKey, 5);
+		osMessagePut(tNoteEventQueueHandle, unPressedKey + 50, 5);
 		
 		// 2. Wait until key release
 		osSemaphoreWait(KB_ReleaseHandle, portMAX_DELAY);
