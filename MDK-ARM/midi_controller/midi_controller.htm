@@ -3,7 +3,7 @@
 <title>Static Call Graph - [midi_controller\midi_controller.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image midi_controller\midi_controller.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060300: Last Updated: Tue Nov 15 22:46:40 2016
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060300: Last Updated: Wed Nov 16 21:50:27 2016
 <BR><P>
 <H3>Maximum Stack Usage =        288 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -344,7 +344,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[52]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_ADC_Init
 </UL>
 
-<P><STRONG><a name="[3f]"></a>BT_Comm</STRONG> (Thumb, 58 bytes, Stack size 32 bytes, bluetooth.o(i.BT_Comm))
+<P><STRONG><a name="[3f]"></a>BT_Comm</STRONG> (Thumb, 78 bytes, Stack size 32 bytes, bluetooth.o(i.BT_Comm))
 <BR><BR>[Stack]<UL><LI>Max Depth = 168<LI>Call Chain = BT_Comm &rArr; osMessageGet &rArr; xQueueGenericReceive &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[4f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit_DMA
@@ -812,7 +812,7 @@ Global Symbols
 <P><STRONG><a name="[2]"></a>HardFault_Handler</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, stm32f1xx_it.o(i.HardFault_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xb.o(RESET)
 </UL>
-<P><STRONG><a name="[40]"></a>KB_Routine</STRONG> (Thumb, 186 bytes, Stack size 0 bytes, keyboard.o(i.KB_Routine))
+<P><STRONG><a name="[40]"></a>KB_Routine</STRONG> (Thumb, 208 bytes, Stack size 0 bytes, keyboard.o(i.KB_Routine))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = KB_Routine &rArr; osMessagePut &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_SPI_Transmit

@@ -86,7 +86,7 @@ const uint32_t UN_BAUD_LIST[] = {9600, 19200, 38400, 57600, 115200, 230400};
 
 static char unRxBuffer[MAX_BT_UART_RX_LENGTH];
 static uint8_t unChannel = 1;
-static uint8_t unVelocity = 60;
+static uint8_t unVelocity = 100;
 
 //static FlagStatus tBtUartRxTimeout;
 
@@ -394,7 +394,7 @@ void BT_Comm(void const * argument)
 //	pSendATCmd(ENUM_AT_CMD_INQ, NULL, 0);
 //	pSendATCmd(ENUM_AT_CMD_CONA, "0x001A7DDA7113", strlen("0x001A7DDA7113"));
 //	pSendATCmd(ENUM_AT_CMD_IMME, NULL, 0);
-
+	tKeyEvent = osMessageGet(tNoteEventQueueHandle, 0);
 	while(1){
 		tKeyEvent = osMessageGet(tNoteEventQueueHandle, portMAX_DELAY);
 		// channel+note+velocity+\0

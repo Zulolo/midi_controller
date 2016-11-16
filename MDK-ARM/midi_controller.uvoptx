@@ -169,7 +169,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name>嗰搘趑?</Name>
+          <Name>嗰晈祠o</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -212,14 +212,14 @@
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>cNotes</ItemText>
+          <ItemText>unPressedKey</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>
           <SubType>256</SubType>
-          <ItemText>0x200000AC</ItemText>
+          <ItemText>0x200004B0</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>
