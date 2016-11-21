@@ -172,11 +172,17 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
   
     /**SPI1 GPIO Configuration    
     PB3     ------> SPI1_SCK
+    PB4     ------> SPI1_MISO
     PB5     ------> SPI1_MOSI 
     */
     GPIO_InitStruct.Pin = IO_CLK_Pin|IO_DATA_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_4;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     __HAL_AFIO_REMAP_SPI1_ENABLE();
@@ -222,9 +228,10 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
   
     /**SPI1 GPIO Configuration    
     PB3     ------> SPI1_SCK
+    PB4     ------> SPI1_MISO
     PB5     ------> SPI1_MOSI 
     */
-    HAL_GPIO_DeInit(GPIOB, IO_CLK_Pin|IO_DATA_Pin);
+    HAL_GPIO_DeInit(GPIOB, IO_CLK_Pin|GPIO_PIN_4|IO_DATA_Pin);
 
   /* USER CODE BEGIN SPI1_MspDeInit 1 */
 
@@ -248,6 +255,47 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
 
   /* USER CODE END SPI2_MspDeInit 1 */
   }
+
+}
+
+void HAL_TIM_OnePulse_MspInit(TIM_HandleTypeDef* htim_onepulse)
+{
+
+  if(htim_onepulse->Instance==TIM4)
+  {
+  /* USER CODE BEGIN TIM4_MspInit 0 */
+
+  /* USER CODE END TIM4_MspInit 0 */
+    /* Peripheral clock enable */
+    __HAL_RCC_TIM4_CLK_ENABLE();
+    /* Peripheral interrupt init */
+    HAL_NVIC_SetPriority(TIM4_IRQn, 8, 0);
+    HAL_NVIC_EnableIRQ(TIM4_IRQn);
+  /* USER CODE BEGIN TIM4_MspInit 1 */
+
+  /* USER CODE END TIM4_MspInit 1 */
+  }
+
+}
+
+void HAL_TIM_OnePulse_MspDeInit(TIM_HandleTypeDef* htim_onepulse)
+{
+
+  if(htim_onepulse->Instance==TIM4)
+  {
+  /* USER CODE BEGIN TIM4_MspDeInit 0 */
+
+  /* USER CODE END TIM4_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_TIM4_CLK_DISABLE();
+
+    /* Peripheral interrupt DeInit*/
+    HAL_NVIC_DisableIRQ(TIM4_IRQn);
+
+  }
+  /* USER CODE BEGIN TIM4_MspDeInit 1 */
+
+  /* USER CODE END TIM4_MspDeInit 1 */
 
 }
 

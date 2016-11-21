@@ -44,6 +44,8 @@ ADC_HandleTypeDef hadc1;
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 
+TIM_HandleTypeDef htim4;
+
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart1_tx;
@@ -59,6 +61,7 @@ osSemaphoreId BT_tUART_TxIsrHandle;
 osSemaphoreId BT_tUART_RxIsrHandle;
 osSemaphoreId KB_PressedHandle;
 osSemaphoreId KB_ReleaseHandle;
+osSemaphoreId KB_SPI_BusyHandle;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -75,6 +78,7 @@ static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_TIM4_Init(void);
 void StartDefaultTask(void const * argument);
 extern void BT_Comm(void const * argument);
 extern void KB_Routine(void const * argument);
@@ -111,6 +115,7 @@ int main(void)
   MX_SPI2_Init();
   MX_USART1_UART_Init();
   MX_USART3_UART_Init();
+  MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
 	
@@ -136,6 +141,10 @@ int main(void)
   /* definition and creation of KB_Release */
   osSemaphoreDef(KB_Release);
   KB_ReleaseHandle = osSemaphoreCreate(osSemaphore(KB_Release), 1);
+
+  /* definition and creation of KB_SPI_Busy */
+  osSemaphoreDef(KB_SPI_Busy);
+  KB_SPI_BusyHandle = osSemaphoreCreate(osSemaphore(KB_SPI_Busy), 1);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -272,12 +281,12 @@ static void MX_SPI1_Init(void)
 
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_1LINE;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -306,6 +315,22 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi2.Init.CRCPolynomial = 10;
   if (HAL_SPI_Init(&hspi2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+}
+
+/* TIM4 init function */
+static void MX_TIM4_Init(void)
+{
+
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 7;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 0;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  if (HAL_TIM_OnePulse_Init(&htim4, TIM_OPMODE_SINGLE) != HAL_OK)
   {
     Error_Handler();
   }
@@ -427,7 +452,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : IO_INT_Pin */
   GPIO_InitStruct.Pin = IO_INT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(IO_INT_GPIO_Port, &GPIO_InitStruct);
 
@@ -471,7 +496,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
 /* USER CODE BEGIN Callback 1 */
-
+  if (htim->Instance == TIM4) {
+    osSemaphoreRelease(KB_SPI_BusyHandle);
+  }
 /* USER CODE END Callback 1 */
 }
 
