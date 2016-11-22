@@ -258,10 +258,10 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
 
 }
 
-void HAL_TIM_OnePulse_MspInit(TIM_HandleTypeDef* htim_onepulse)
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
 {
 
-  if(htim_onepulse->Instance==TIM4)
+  if(htim_base->Instance==TIM4)
   {
   /* USER CODE BEGIN TIM4_MspInit 0 */
 
@@ -269,7 +269,7 @@ void HAL_TIM_OnePulse_MspInit(TIM_HandleTypeDef* htim_onepulse)
     /* Peripheral clock enable */
     __HAL_RCC_TIM4_CLK_ENABLE();
     /* Peripheral interrupt init */
-    HAL_NVIC_SetPriority(TIM4_IRQn, 8, 0);
+    HAL_NVIC_SetPriority(TIM4_IRQn, 7, 0);
     HAL_NVIC_EnableIRQ(TIM4_IRQn);
   /* USER CODE BEGIN TIM4_MspInit 1 */
 
@@ -278,10 +278,10 @@ void HAL_TIM_OnePulse_MspInit(TIM_HandleTypeDef* htim_onepulse)
 
 }
 
-void HAL_TIM_OnePulse_MspDeInit(TIM_HandleTypeDef* htim_onepulse)
+void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
 {
 
-  if(htim_onepulse->Instance==TIM4)
+  if(htim_base->Instance==TIM4)
   {
   /* USER CODE BEGIN TIM4_MspDeInit 0 */
 

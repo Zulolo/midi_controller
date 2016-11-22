@@ -37,33 +37,50 @@ int32_t waitUS(uint16_t unWaitUS)
 {
 	KB_COMM_SPI_TIM.Init.Period = unWaitUS - 1;
 
+	osSemaphoreWait(KB_SPI_BusyHandle, 0); 	
   if (HAL_TIM_Base_Init(&KB_COMM_SPI_TIM) != HAL_OK){
     return (-1);
   }
-
+//	__HAL_TIM_CLEAR_FLAG(&KB_COMM_SPI_TIM, TIM_FLAG_UPDATE);
+	__HAL_TIM_CLEAR_IT(&KB_COMM_SPI_TIM, TIM_IT_UPDATE);
   if (HAL_TIM_Base_Start_IT(&KB_COMM_SPI_TIM) != HAL_OK){
     return (-1);
   }
+	osSemaphoreWait(KB_SPI_BusyHandle, portMAX_DELAY);
 	return 0;
+}
+
+void waitUntilOneByteSent(void)
+{	// This is only valid when SPI at 8MHz and CPU run at 64MHz
+	// More save CPU than use 1us timer above
+	uint32_t unCNT;
+	for(unCNT = 0; unCNT < 5; unCNT++){
+		__NOP();
+	}
 }
 
 uint8_t readPressedKey(void)
 {
+	uint8_t unPressedKey;
 	HAL_GPIO_WritePin(IO_NCS_GPIO_Port, IO_NCS_Pin, GPIO_PIN_RESET);
+	__HAL_SPI_ENABLE(&KB_COMM_IF_HANDLE);
 	KB_COMM_IF_HANDLE.Instance->DR = KB_READ_KEY_CMD;
+	
 	// Wait until all bits have been sent out
-	waitUS(4);
-	osSemaphoreWait(KB_SPI_BusyHandle, portMAX_DELAY);
+//	waitUS(200);
+	waitUntilOneByteSent();
+	
 	HAL_GPIO_WritePin(IO_NCS_GPIO_Port, IO_NCS_Pin, GPIO_PIN_SET);
 	
-	__NOP();
-	__NOP();
+	waitUntilOneByteSent();
 	
 	// send dummy data to read
 	KB_COMM_IF_HANDLE.Instance->DR = 0xA5;
-	waitUS(4);
-	osSemaphoreWait(KB_SPI_BusyHandle, portMAX_DELAY);
-	return KB_COMM_IF_HANDLE.Instance->DR;
+	waitUS(200);
+	
+	unPressedKey = KB_COMM_IF_HANDLE.Instance->DR;
+	__HAL_SPI_DISABLE(&KB_COMM_IF_HANDLE);
+	return unPressedKey;
 }
 
 uint8_t unPressedKey;
@@ -82,7 +99,7 @@ void KB_Routine(void const * argument)
 	osSemaphoreWait(KB_SPI_BusyHandle, 0);
 	while(1){
 		// 1. Read pressed key
-		osSemaphoreWait(KB_PressedHandle, portMAX_DELAY);
+//		osSemaphoreWait(KB_PressedHandle, portMAX_DELAY);
 		unPressedKey = readPressedKey();	
 		osMessagePut(tNoteEventQueueHandle, unPressedKey + 50, 5);
 		
