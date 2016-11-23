@@ -73,8 +73,10 @@
 #define IO_NCS_GPIO_Port GPIOA
 #define IO_CLK_Pin GPIO_PIN_3
 #define IO_CLK_GPIO_Port GPIOB
-#define IO_DATA_Pin GPIO_PIN_5
-#define IO_DATA_GPIO_Port GPIOB
+#define IO_MISO_Pin GPIO_PIN_4
+#define IO_MISO_GPIO_Port GPIOB
+#define IO_MOSI_Pin GPIO_PIN_5
+#define IO_MOSI_GPIO_Port GPIOB
 #define IO_INT_Pin GPIO_PIN_6
 #define IO_INT_GPIO_Port GPIOB
 #define IO_RST_Pin GPIO_PIN_7
