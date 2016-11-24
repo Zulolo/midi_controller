@@ -35,7 +35,8 @@
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "seq_event.h"
+#include "global.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -55,7 +56,7 @@ DMA_HandleTypeDef hdma_usart3_tx;
 
 osThreadId defaultTaskHandle;
 osThreadId btCommTaskHandle;
-osThreadId keyboardTaskHandle;
+osThreadId keyboardNoteTasHandle;
 osMessageQId tNoteEventQueueHandle;
 osSemaphoreId BT_tUART_TxIsrHandle;
 osSemaphoreId BT_tUART_RxIsrHandle;
@@ -81,7 +82,7 @@ static void MX_USART3_UART_Init(void);
 static void MX_TIM4_Init(void);
 void StartDefaultTask(void const * argument);
 extern void BT_Comm(void const * argument);
-extern void KB_Routine(void const * argument);
+extern void KB_NoteRoutine(void const * argument);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -89,7 +90,7 @@ extern void KB_Routine(void const * argument);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
+uint8_t unVelocity[MIDI_MAX_CHANNEL];
 /* USER CODE END 0 */
 
 int main(void)
@@ -163,9 +164,9 @@ int main(void)
   osThreadDef(btCommTask, BT_Comm, osPriorityHigh, 0, 512);
   btCommTaskHandle = osThreadCreate(osThread(btCommTask), NULL);
 
-  /* definition and creation of keyboardTask */
-  osThreadDef(keyboardTask, KB_Routine, osPriorityIdle, 0, 128);
-  keyboardTaskHandle = osThreadCreate(osThread(keyboardTask), NULL);
+  /* definition and creation of keyboardNoteTas */
+  osThreadDef(keyboardNoteTas, KB_NoteRoutine, osPriorityIdle, 0, 128);
+  keyboardNoteTasHandle = osThreadCreate(osThread(keyboardNoteTas), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -173,7 +174,7 @@ int main(void)
 
   /* Create the queue(s) */
   /* definition and creation of tNoteEventQueue */
-  osMessageQDef(tNoteEventQueue, 16, uint8_t);
+  osMessageQDef(tNoteEventQueue, 16, snd_seq_event_t);
   tNoteEventQueueHandle = osMessageCreate(osMessageQ(tNoteEventQueue), NULL);
 
   /* USER CODE BEGIN RTOS_QUEUES */

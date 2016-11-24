@@ -1,6 +1,8 @@
 
 #include "stm32f1xx_hal.h"
 #include "keyboard.h"
+#include "seq_event.h"
+#include "global.h"
 
 #define KB_COMM_IF										SPI1
 #define KB_COMM_IF_HANDLE							hspi1	//huart1
@@ -13,6 +15,7 @@ extern osSemaphoreId KB_ReleaseHandle;
 extern osSemaphoreId KB_SPI_BusyHandle;
 extern osMessageQId tNoteEventQueueHandle;
 extern TIM_HandleTypeDef htim4;
+extern uint8_t unVelocity[];
 //static uint8_t unCommErr = 0;
 	
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -58,7 +61,8 @@ void waitUntilOneByteSent(void)
 	}
 }
 
-uint8_t readPressedKey(void)
+// If connected to multi-keyboard, channel can be used to identify
+uint8_t readPressedKey(uint8_t unChannel)
 {
 	static uint8_t unReadKeyCmd = KB_READ_KEY_CMD;
 	uint8_t unPressedKey;
@@ -99,30 +103,50 @@ void initKeyboard(void)
 	HAL_GPIO_WritePin(IO_NCS_GPIO_Port, IO_NCS_Pin, GPIO_PIN_SET);
 }
 
-uint8_t unPressedKey;
-void KB_Routine(void const * argument)
+//snd_seq_event_t getPressKeySeqEvent(uint8_t unPressedKey)
+//{
+//	
+//}
+uint8_t getNoteFromKey(uint8_t unPressedKey)
 {
-//	static uint8_t unRdPressedKeyCmd;
-//	static uint8_t unPressedKey;
-//	int i;
-//	unRdPressedKeyCmd = RD_KEYBOARD_CMD;
+	return unPressedKey;
+}
+
+uint8_t unPressedKey;
+void KB_NoteRoutine(void const* argument)
+{
+	static snd_seq_event_t tPressKeySeqEvent;
+	static uint8_t unChannel = 1;
+
 	HAL_GPIO_WritePin(IO_NCS_GPIO_Port, IO_NCS_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(IO_RST_GPIO_Port, IO_RST_Pin, GPIO_PIN_RESET);
 	osDelay(50);
 	HAL_GPIO_WritePin(IO_RST_GPIO_Port, IO_RST_Pin, GPIO_PIN_SET);
 	initKeyboard();
 	osSemaphoreWait(KB_PressedHandle, 0);
+	
+	tPressKeySeqEvent.data.note.channel = unChannel;
+	unVelocity[unChannel] = 100;
 	while(1){
 		// 1. Read pressed key
-//		osSemaphoreWait(KB_PressedHandle, portMAX_DELAY);
-		unPressedKey = readPressedKey();	
-		osMessagePut(tNoteEventQueueHandle, unPressedKey + 50, 5);
+		osSemaphoreWait(KB_PressedHandle, portMAX_DELAY);
+		unPressedKey = readPressedKey(unChannel);	
+		tPressKeySeqEvent.type = SND_SEQ_EVENT_NOTEON;
+		tPressKeySeqEvent.data.note.note = getNoteFromKey(unPressedKey);
+		tPressKeySeqEvent.data.note.velocity = unVelocity[unChannel];
+//		tPressKeySeqEvent = getPressKeySeqEvent(unPressedKey);
+		xQueueSendToBack(tNoteEventQueueHandle, &tPressKeySeqEvent, 5);
 		
 		// 2. Wait until key release
 		while(isKeyReleased() != pdTRUE){
 			osDelay(2);
 		}
-		osMessagePut(tNoteEventQueueHandle, 0, 5);
+//		tPressKeySeqEvent = getPressKeySeqEvent(0);
+		unPressedKey = 0;
+		tPressKeySeqEvent.type = SND_SEQ_EVENT_NOTEOFF;
+		tPressKeySeqEvent.data.note.note = getNoteFromKey(unPressedKey);
+		tPressKeySeqEvent.data.note.velocity = unVelocity[unChannel];
+		xQueueSendToBack(tNoteEventQueueHandle, &tPressKeySeqEvent, 5);
 		
 		HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 	}

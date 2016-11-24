@@ -1,6 +1,7 @@
 
 #include <string.h>
 #include "bluetooth.h"
+#include "seq_event.h"
 
 #define BT_MODULE_RESET_LOW_DURATION		30
 #define BT_MODULE_RESET_AFTER_DURATION	20
@@ -361,13 +362,13 @@ int32_t nInitBT(void)
 	return 0;
 }
 
-#define NOTE_FRAME_LENGTH					sizeof("01AE2C")	// channel+note+velocity
+#define NOTE_FRAME_LENGTH					sizeof("0601AE2C")	// type+channel+note+velocity
 #define NOTE_FRAME_DATA_NUMBER		((NOTE_FRAME_LENGTH - 1)/2)
 #define NOTE_FRAME_END_SYMBOL			'\0'
 
 void BT_Comm(void const * argument)
 {
-	osEvent tKeyEvent;
+	static snd_seq_event_t tSeqEvent;
 	char cNotes[NOTE_FRAME_LENGTH];
 
 //	if (nInitBT() < 0){
@@ -394,12 +395,13 @@ void BT_Comm(void const * argument)
 //	pSendATCmd(ENUM_AT_CMD_INQ, NULL, 0);
 //	pSendATCmd(ENUM_AT_CMD_CONA, "0x001A7DDA7113", strlen("0x001A7DDA7113"));
 //	pSendATCmd(ENUM_AT_CMD_IMME, NULL, 0);
-	tKeyEvent = osMessageGet(tNoteEventQueueHandle, 0);
+	xQueueReceive(tNoteEventQueueHandle, &tSeqEvent, 0);
 	while(1){
-		tKeyEvent = osMessageGet(tNoteEventQueueHandle, portMAX_DELAY);
-		// channel+note+velocity+\0
-		sprintf(cNotes, "%02X%02X%02X", unChannel, tKeyEvent.value.v, unVelocity);
+		if (xQueueReceive(tNoteEventQueueHandle, &tSeqEvent, portMAX_DELAY) == pdTRUE){
+		// type+channel+note+velocity+\0
+		sprintf(cNotes, "%02X%02X%02X%02X", tSeqEvent.type, tSeqEvent.data.note.channel, 
+			tSeqEvent.data.note.note, tSeqEvent.data.note.velocity);
 		HAL_UART_Transmit_DMA(&BT_UART_HANDLE, (uint8_t*)cNotes, sizeof(cNotes));
+		}
 	}
-	
 }

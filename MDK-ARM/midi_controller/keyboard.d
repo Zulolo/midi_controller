@@ -47,3 +47,5 @@ midi_controller\keyboard.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/t
 midi_controller\keyboard.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 midi_controller\keyboard.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 midi_controller\keyboard.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
+midi_controller\keyboard.o: ../Inc/seq_event.h
+midi_controller\keyboard.o: ../Inc/global.h

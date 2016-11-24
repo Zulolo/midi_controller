@@ -46,3 +46,5 @@ midi_controller\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/timer
 midi_controller\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 midi_controller\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 midi_controller\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
+midi_controller\main.o: ../Inc/seq_event.h
+midi_controller\main.o: ../Inc/global.h
