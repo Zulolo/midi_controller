@@ -123,15 +123,16 @@ void initKeyboard(void)
 
 uint8_t getNoteFromKey(uint8_t unPressedKey)
 {
-	return ((unPressedKey & (~0x80)) >> 1);
+	return (((unPressedKey & (~0x80)) >> 1) + 50);
 }
 
 snd_seq_event_t getPressKeySeqEvent(uint8_t unPressedKey, uint8_t unChannel)
 {
 	static snd_seq_event_t tPressKeySeqEvent;
 	tPressKeySeqEvent.type = (((unPressedKey & 0x80) == 0x80) ? (SND_SEQ_EVENT_NOTEON):(SND_SEQ_EVENT_NOTEOFF)) ;
+	tPressKeySeqEvent.data.note.channel = unChannel;
 	tPressKeySeqEvent.data.note.note = getNoteFromKey(unPressedKey);
-	tPressKeySeqEvent.data.note.velocity = unVelocity[unChannel];
+	tPressKeySeqEvent.data.note.velocity = (((unPressedKey & 0x80) == 0x80) ? (unVelocity[unChannel]):(0)); 
 	return tPressKeySeqEvent;
 }
 
@@ -171,8 +172,6 @@ void KB_NoteRoutine(void const* argument)
 		
 		SET_BIT(EXTI->IMR, 0x0040); 
 		HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
-		
 	}
-	
 }
 
