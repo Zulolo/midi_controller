@@ -401,6 +401,7 @@ void BT_Comm(void const * argument)
 		// type+channel+note+velocity+\0
 		sprintf(cNotes, "%02X%02X%02X%02X", tSeqEvent.type, tSeqEvent.data.note.channel, 
 			tSeqEvent.data.note.note, tSeqEvent.data.note.velocity);
+		cNotes[sizeof(cNotes) - 1] = '\n';
 		HAL_UART_Transmit_DMA(&BT_UART_HANDLE, (uint8_t*)cNotes, sizeof(cNotes));
 		}
 	}
