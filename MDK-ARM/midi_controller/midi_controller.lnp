@@ -23,6 +23,7 @@
 "midi_controller\keyboard.o"
 "midi_controller\stm32f1xx_hal_timebase_tim.o"
 "midi_controller\freertos.o"
+"midi_controller\analog.o"
 "midi_controller\system_stm32f1xx.o"
 "midi_controller\startup_stm32f103xb.o"
 "midi_controller\timers.o"

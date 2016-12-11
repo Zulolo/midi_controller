@@ -41,6 +41,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc2;
+DMA_HandleTypeDef hdma_adc1;
 
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
@@ -57,12 +59,16 @@ DMA_HandleTypeDef hdma_usart3_tx;
 osThreadId defaultTaskHandle;
 osThreadId btCommTaskHandle;
 osThreadId keyboardNoteTasHandle;
+osThreadId adc1TaskHandle;
+osThreadId adc2TaskHandle;
 osMessageQId tNoteEventQueueHandle;
 osSemaphoreId BT_tUART_TxIsrHandle;
 osSemaphoreId BT_tUART_RxIsrHandle;
 osSemaphoreId KB_PressedHandle;
 osSemaphoreId KB_ReleaseHandle;
 osSemaphoreId KB_SPI_BusyHandle;
+osSemaphoreId ADC1_CNVT_DONEHandle;
+osSemaphoreId ADC2_CNVT_DONEHandle;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -80,9 +86,12 @@ static void MX_SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_ADC2_Init(void);
 void StartDefaultTask(void const * argument);
 extern void BT_Comm(void const * argument);
 extern void KB_NoteRoutine(void const * argument);
+extern void ADC1_Routine(void const * argument);
+extern void ADC2_Routine(void const * argument);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -117,6 +126,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART3_UART_Init();
   MX_TIM4_Init();
+  MX_ADC2_Init();
 
   /* USER CODE BEGIN 2 */
 	
@@ -147,6 +157,14 @@ int main(void)
   osSemaphoreDef(KB_SPI_Busy);
   KB_SPI_BusyHandle = osSemaphoreCreate(osSemaphore(KB_SPI_Busy), 1);
 
+  /* definition and creation of ADC1_CNVT_DONE */
+  osSemaphoreDef(ADC1_CNVT_DONE);
+  ADC1_CNVT_DONEHandle = osSemaphoreCreate(osSemaphore(ADC1_CNVT_DONE), 1);
+
+  /* definition and creation of ADC2_CNVT_DONE */
+  osSemaphoreDef(ADC2_CNVT_DONE);
+  ADC2_CNVT_DONEHandle = osSemaphoreCreate(osSemaphore(ADC2_CNVT_DONE), 1);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -167,6 +185,14 @@ int main(void)
   /* definition and creation of keyboardNoteTas */
   osThreadDef(keyboardNoteTas, KB_NoteRoutine, osPriorityIdle, 0, 128);
   keyboardNoteTasHandle = osThreadCreate(osThread(keyboardNoteTas), NULL);
+
+  /* definition and creation of adc1Task */
+  osThreadDef(adc1Task, ADC1_Routine, osPriorityIdle, 0, 128);
+  adc1TaskHandle = osThreadCreate(osThread(adc1Task), NULL);
+
+  /* definition and creation of adc2Task */
+  osThreadDef(adc2Task, ADC2_Routine, osPriorityIdle, 0, 128);
+  adc2TaskHandle = osThreadCreate(osThread(adc2Task), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -255,12 +281,12 @@ static void MX_ADC1_Init(void)
     /**Common config 
     */
   hadc1.Instance = ADC1;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.NbrOfConversion = 5;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
@@ -270,8 +296,76 @@ static void MX_ADC1_Init(void)
     */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_28CYCLES_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+    /**Configure Regular Channel 
+    */
+  sConfig.Channel = ADC_CHANNEL_1;
+  sConfig.Rank = 2;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+    /**Configure Regular Channel 
+    */
+  sConfig.Channel = ADC_CHANNEL_2;
+  sConfig.Rank = 3;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+    /**Configure Regular Channel 
+    */
+  sConfig.Channel = ADC_CHANNEL_3;
+  sConfig.Rank = 4;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+    /**Configure Regular Channel 
+    */
+  sConfig.Channel = ADC_CHANNEL_4;
+  sConfig.Rank = 5;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+}
+
+/* ADC2 init function */
+static void MX_ADC2_Init(void)
+{
+
+  ADC_ChannelConfTypeDef sConfig;
+
+    /**Common config 
+    */
+  hadc2.Instance = ADC2;
+  hadc2.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc2.Init.ContinuousConvMode = DISABLE;
+  hadc2.Init.DiscontinuousConvMode = DISABLE;
+  hadc2.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc2.Init.NbrOfConversion = 1;
+  if (HAL_ADC_Init(&hadc2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+    /**Configure Regular Channel 
+    */
+  sConfig.Channel = ADC_CHANNEL_5;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
   {
     Error_Handler();
   }
@@ -403,6 +497,9 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   /* DMA1_Channel2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);

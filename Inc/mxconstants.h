@@ -47,8 +47,6 @@
 #define BT_SLV_MST_SW_HW_GPIO_Port GPIOC
 #define BT_INT_Pin GPIO_PIN_15
 #define BT_INT_GPIO_Port GPIOC
-#define ADC_POWER_IN_Pin GPIO_PIN_0
-#define ADC_POWER_IN_GPIO_Port GPIOB
 #define SPI2_CS4_Pin GPIO_PIN_1
 #define SPI2_CS4_GPIO_Port GPIOB
 #define SPI2_CS3_Pin GPIO_PIN_2

@@ -86,8 +86,8 @@ const uint16_t UN_AT_CMD_RSP_LEN[] = {sizeof(AT_CMD_RSP_AT) - 1, sizeof(AT_CMD_R
 const uint32_t UN_BAUD_LIST[] = {9600, 19200, 38400, 57600, 115200, 230400};
 
 static char unRxBuffer[MAX_BT_UART_RX_LENGTH];
-static uint8_t unChannel = 1;
-static uint8_t unVelocity = 100;
+//static uint8_t unChannel = 1;
+//static uint8_t unVelocity = 100;
 
 //static FlagStatus tBtUartRxTimeout;
 
