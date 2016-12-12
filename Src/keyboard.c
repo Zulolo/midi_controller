@@ -63,7 +63,7 @@ void waitUntilOneByteSent(void)
 }
 
 // If connected to multi-keyboard, channel can be used to identify
-uint8_t readPressedKey(uint8_t unChannel)
+static uint8_t readPressedKey(uint8_t unChannel)
 {
 //	static uint8_t unReadKeyCmd = KB_READ_KEY_CMD;
 //	static uint8_t unDummyKeyCmd = 0;
@@ -121,12 +121,12 @@ void initKeyboard(void)
 	HAL_GPIO_WritePin(IO_NCS_GPIO_Port, IO_NCS_Pin, GPIO_PIN_SET);
 }
 
-uint8_t getNoteFromKey(uint8_t unPressedKey)
+static uint8_t getNoteFromKey(uint8_t unPressedKey)
 {
 	return (((unPressedKey & (~0x80)) >> 1) + 50);
 }
 
-snd_seq_event_t getPressKeySeqEvent(uint8_t unPressedKey, uint8_t unChannel)
+static snd_seq_event_t getPressKeySeqEvent(uint8_t unPressedKey, uint8_t unChannel)
 {
 	static snd_seq_event_t tPressKeySeqEvent;
 	tPressKeySeqEvent.type = (((unPressedKey & 0x80) == 0x80) ? (SND_SEQ_EVENT_NOTEON):(SND_SEQ_EVENT_NOTEOFF)) ;
@@ -161,7 +161,7 @@ void KB_NoteRoutine(void const* argument)
 		CLEAR_BIT(EXTI->IMR, 0x0040); 
 		unPressedKey = readPressedKey(unChannel);	
 		tPressKeySeqEvent = getPressKeySeqEvent(unPressedKey, unChannel);
-		xQueueSendToBack(tNoteEventQueueHandle, &tPressKeySeqEvent, 5);
+		xQueueSendToBack(tNoteEventQueueHandle, &tPressKeySeqEvent, 10);
 		
 		// 2. Wait until key release
 		while(((unPressedKey = readPressedKey(unChannel)) & 0x80) != 0x00){

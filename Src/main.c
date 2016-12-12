@@ -175,7 +175,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 256);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of btCommTask */
@@ -183,15 +183,15 @@ int main(void)
   btCommTaskHandle = osThreadCreate(osThread(btCommTask), NULL);
 
   /* definition and creation of keyboardNoteTas */
-  osThreadDef(keyboardNoteTas, KB_NoteRoutine, osPriorityIdle, 0, 128);
+  osThreadDef(keyboardNoteTas, KB_NoteRoutine, osPriorityAboveNormal, 0, 256);
   keyboardNoteTasHandle = osThreadCreate(osThread(keyboardNoteTas), NULL);
 
   /* definition and creation of adc1Task */
-  osThreadDef(adc1Task, ADC1_Routine, osPriorityIdle, 0, 128);
+  osThreadDef(adc1Task, ADC1_Routine, osPriorityNormal, 0, 256);
   adc1TaskHandle = osThreadCreate(osThread(adc1Task), NULL);
 
   /* definition and creation of adc2Task */
-  osThreadDef(adc2Task, ADC2_Routine, osPriorityIdle, 0, 128);
+  osThreadDef(adc2Task, ADC2_Routine, osPriorityIdle, 0, 256);
   adc2TaskHandle = osThreadCreate(osThread(adc2Task), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -498,7 +498,7 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 10, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   /* DMA1_Channel2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);

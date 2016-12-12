@@ -1,4 +1,5 @@
 midi_controller\analog.o: ..\Src\Analog.c
+midi_controller\analog.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 midi_controller\analog.o: ../Inc/analog.h
 midi_controller\analog.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 midi_controller\analog.o: ../Inc/stm32f1xx_hal_conf.h
@@ -47,3 +48,5 @@ midi_controller\analog.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/tim
 midi_controller\analog.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 midi_controller\analog.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 midi_controller\analog.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
+midi_controller\analog.o: ../Inc/seq_event.h
+midi_controller\analog.o: ../Inc/global.h
